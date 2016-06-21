@@ -1,0 +1,939 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
+
+    <title>kaleidoscope</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/starter-template.css" rel="stylesheet">
+
+    <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
+      
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <script src="/js/ie-emulation-modes-warning.js"></script>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+      <link rel="stylesheet" type="text/css" href="http://s3.amazonaws.com/hexviewjs/hexview.default.css" />
+  </head>
+
+<body>
+    
+    <div class="modal fade file-open-modal" tabindex="-1" role="dialog" aria-labelledby="fileOpenModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="fileOpenModalLabel">Open File</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="file" id="files" name="files[]"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="openSelectedFile()">Open</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade create-comment-modal" tabindex="-1" role="dialog" aria-labelledby="fileOpenModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <form id="formCreateComment" onsubmit="createThread()">
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="newCommentText" placeholder="Comment..."/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Comment</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">kaleidoscope</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="cfatool tool-comment disabled"><a href="#" onclick="return false;"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></li>
+                    <li class="cfatool tool-split disabled"><a href="#" onclick="return false;"><span class="glyphicon glyphicon-scissors" aria-hidden="true"></span></a></li>
+                    <li class="cfatool tool-merge disabled"><a href="#" onclick="return false;"><span class="glyphicon glyphicon-open" aria-hidden="true"></span></a></li>
+                    <li><a href="#" id="info-popover" onclick="return false;" data-trigger="click"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a></li>
+                    <li class="open-file" data-toggle="modal" data-target=".file-open-modal"><a href="#" onclick="return false;"><span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span></a></li>
+                    <li><a href="#" id="settings-popover" onclick="return false;" data-trigger="click"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></li>
+                </ul>
+<!--
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search...">
+          </form>
+-->
+          </div>
+        </div>
+    </div>
+
+    <div class="container-fluid main">
+        <div class="row">
+        <!--
+          <div class="col-sm-3 col-md-3 sidebar">
+              <section>
+                <h4>
+                    Add Section
+                </h4>
+                <div>
+                    <form id="formAddSection">
+                        <p>
+                            <label>Type: </label>
+                            <select name="sectionType">
+                                <option value="hexview">Hex</option>
+                                <option value="asmview">Assembly</option>
+                            </select>
+                        </p>
+                        <p>
+                            <label>Name</label>
+                            <input name="sectionName" required></label>
+                        </p>
+                        <p>
+                            <label>Start Offset</label>
+                            <input name="startOffset" required>
+                        </p>
+                        <p>
+                            <label>End Offset</label>
+                            <input name="endOffset" required>
+                        </p>
+                        <p>
+                            <button type="submit" class="btn btn-primary">Create</button>
+                        </p>
+                    </form>
+                </div>
+              </section>
+            </div>
+            -->
+            
+        <!--<div class="col-xs-10 col-xs-offset-1 col-md-10 col-md-offset-1 main">
+        </div>-->
+      </div>
+    </div>
+    
+    <nav class="navbar navbar-default navbar-fixed-bottom">
+        <div class="container">
+            
+        </div>
+    </nav>
+
+    <div id="settings-popover-head" class="hide">
+        Settings
+    </div>
+    
+    <div id="settings-popover-content" class="hide">
+        <form id="formSettings" onsubmit="saveSettings()">
+            <p>
+                <label>Name</label>
+                <input name="userName" required></input>
+            </p>
+            <p>
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-default" onclick="$('#settings-popover').popover('hide');">Cancel</button>
+            </p>
+        </form>
+    </div>
+    
+    <div id="info-popover-head" class="hide">
+        File Information
+    </div>
+
+    <div id="info-popover-content" class="hide">
+        <p>
+            <label>File Name</label>
+            <span id="fileName" class="flex"></span>
+        </p>
+        <p>
+            <label>File Size</label>
+            <span id="fileSize" class="flex"></span>
+        </p>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.3/jquery-ui.js"></script>
+    <script src="/js/jquery.ui.touch-punch.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/docs.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+    <link href="/x-editable/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet">
+    <script src="/x-editable/bootstrap3-editable/js/bootstrap-editable.js"></script>
+
+    <link rel="stylesheet" href="/css/tether.css" />
+    <script src="/js/tether.js"></script>
+
+    <link rel="stylesheet" href="/css/drop-theme-basic.css" />
+    <link rel="stylesheet" href="/css/drop-theme-arrows-bounce-dark.css" />
+    <link rel="stylesheet" href="/css/drop-theme-hubspot-popovers.css" />
+    <script src="/js/drop.js"></script>
+
+    <!--<script src="http://s3.amazonaws.com/hexviewjs/hexview.js" type="text/javascript"></script>-->
+    <script type="text/javascript" src="/js/jquery.slimscroll.js"></script>
+    
+    <script src="/js/capstone.min.js"></script>
+
+    <script src="/js/cfa-views.js"></script>
+    <script src="/js/discussion-thread.js"></script>
+    <script src="/js/comment-popover.js"></script>
+
+    <script src="/js/hex-lens.js"></script>
+    <script src="/js/cstrings-lens.js"></script>
+    <script src="/js/integer-lens.js"></script>
+    <script src="/js/asm-lens.js"></script>
+    <script src="/js/hex-lens2.js"></script>
+    <script src="/js/socks-lens.js"></script>
+    
+    <script>
+        var socket = io.connect();
+        
+        var toolMode = 'none';
+        
+        var arrayBuffer = null;
+        var dataView = null;
+        var byteView = null;
+        
+        var servMove = false;
+        
+        var userName = 'unnamed';
+        
+        var totalContentHeight = 0;
+        var currentScrollPosition = 0;
+        
+        availableLenses = [
+            {value: 'HexLens', text: 'Hex/Ascii'},
+            {value: 'CStringsLens', text: 'C String'},
+            {value: 'IntegerLens', text: 'Integer'},
+            {value: 'AsmLens', text: 'Assembly'}
+        ];
+        
+        var sections = [];
+        var threads = [];
+        
+        // Input: Machine code bytes and offset where they are located
+        var buffer = [0x55, 0x48, 0x8b, 0x05, 0xb8, 0x13, 0x00, 0x00];
+        var offset = 0x1000;
+        
+        $.fn.editable.defaults.mode = 'inline';
+        
+        var stringToFunction = function(str) {
+            var arr = str.split(".");
+
+            var fn = (window || this);
+            for (var i = 0, len = arr.length; i < len; i++) {
+                fn = fn[arr[i]];
+            }
+
+            if (typeof fn !== "function") {
+                throw new Error("function not found");
+            }
+
+            return  fn;
+        };
+        
+        function fetchDataUint8(start, end) {
+            return byteView.subarray(start, end);
+        }
+        
+        function findSection(offset) {
+            for (var i = 0; i < sections.length; i++) {
+                if (offset >= sections[i].startOffset && offset < sections[i].endOffset)
+                    return sections[i];
+            }
+        }
+        
+        function threadExists(index) {
+            return typeof threads[index] != 'undefined';
+        }
+        
+        function getThread(index) {
+            return threads[index];
+        }
+        
+        function getThreads(startIndex, endIndex) {
+            var threadSubset = [];
+            
+            for (var i = startIndex; i < endIndex && i < threads.length; i++) {
+                if (threadExists(i)) {
+                    threadSubset.push(i);
+                }
+            }
+            
+            return threadSubset;
+        }
+        
+        function addComment(threadOffset, comment, author) {
+            var threadSection = findSection(threadOffset);
+            var currLens = threadSection.currentLens;
+            if (!threadExists(threadOffset)) {
+                console.log('thread not exist');
+                threads[threadOffset] = new DiscussionThread();
+                threads[threadOffset].setSummary(comment.substring(0, 40));
+                threads[threadOffset].addComment(author, comment, threads[threadOffset].getLength());
+                threadSection.lenses[currLens].updateComments();
+            } else {
+                console.log('thread exist');
+                console.log(author);
+                threads[threadOffset].addComment(author, comment, threads[threadOffset].getLength());
+                threadSection.lenses[currLens].addCommentPopoverContent(threadOffset, comment, author);
+            }
+        }
+        
+        function createThread() {
+            var createCommentForm = $('.create-comment-modal');
+            var threadIndex = createCommentForm.data('offset');
+            var newComment = createCommentForm.find('#newCommentText').val();
+            createCommentForm.find('#newCommentText').val('')
+            
+            socket.emit('addComment', {threadOffset: threadIndex, comment: newComment});
+            
+            $('.create-comment-modal').modal('hide');
+            
+            if(event.preventDefault){
+                event.preventDefault();
+            }else{
+                event.returnValue = false; // for IE as dont support preventDefault;
+            }
+        }
+        
+        function setUsername(name) {
+            userName = name;
+            socket.emit('setUsername', {name: name});
+        }
+        
+        function saveSettings() {
+            console.log("saveSettings");
+            setUsername($('#' + $('#settings-popover').popover().attr('aria-describedby')).find('[name="userName"]').val());
+            $('#settings-popover').popover('hide');
+            
+            if(event.preventDefault){
+                event.preventDefault();
+            }else{
+                event.returnValue = false; // for IE as dont support preventDefault;
+            }
+        }
+        
+        function saveLensSettings(ctx) {
+            event.preventDefault();
+    
+            var data = {};
+            $(ctx).find('input, textarea, select').each(function(i, field) {
+                if (field.type === 'checkbox') {
+                    data[field.name] = (field.checked ? true : false);
+                } else {
+                    data[field.name] = field.value;
+                }
+            });
+            
+            var sec = findSection(parseInt($(ctx).data('section')));
+            socket.emit('changeLensSettings', {section: sec.startOffset, lens: sec.currentLens, settings: data});
+            $(ctx).closest('.popover').popover('hide');
+        }
+
+function hideLensSettings(ctx) {
+    $(ctx).closest('.popover').popover('hide');
+}
+        
+        $(document).ready(function() {
+            $('.main').slimScroll({ height: ($(window).height()-70)+'px', railVisible: true, alwaysVisible: true, disableFadeOut: true, contentHeight: totalContentHeight});
+        });
+        
+        $('.main').slimScroll().bind('slimscrolling', function(e, pos){
+            currentScrollPosition = pos;
+            console.log("----------------\nReached " + pos);
+            
+            for (var d in Drop.drops) {
+                Drop.drops[d].destroy();
+            }
+            
+            drawViewArea(pos);
+        });
+        
+        $('#addsection-popover').popover({
+            html: true,
+            placement: 'bottom',
+            container: 'body',
+            title: function() {
+                return $("#addsection-popover-head").html();
+            },
+            content: function() {
+                return $("#addsection-popover-content").html();
+            }
+        });
+        
+        $('#info-popover').popover({
+            html: true,
+            placement: 'bottom',
+            container: 'body',
+            title: function() {
+                return $("#info-popover-head").html();
+            },
+            content: function() {
+                return $("#info-popover-content").html();
+            }
+        });
+        
+        $('#settings-popover').popover({
+            html: true,
+            placement: 'bottom',
+            container: 'body',
+            title: function() {
+                return $("#settings-popover-head").html();
+            },
+            content: function() {
+                return $("#settings-popover-content").html();
+            }
+        });
+        
+        $('#settings-popover').on('show.bs.popover', function(e) {
+            $('#info-popover').popover('hide');
+        });
+        
+        $('#info-popover').on('show.bs.popover', function(e) {
+            $('#settings-popover').popover('hide');
+        });
+        
+        $('#settings-popover').on('shown.bs.popover', function (e) {
+            $('#' + $('#settings-popover').popover().attr('aria-describedby')).find('[name="userName"]').val(userName);
+        });
+        
+        $('.create-comment-modal').on('shown.bs.modal', function(e) {
+            $(this).find('#newCommentText').focus();
+        });
+        
+        $(window).resize(function() {
+            console.log('window height: ' + $(window).height() + '\nwindow width: ' + $(window).width());
+            
+            for (var i = 0; i < sections.length; i++) {
+                var currLens = sections[i].currentLens;
+                sections[i].lenses[currLens].windowResized($('.main').width());
+            }
+            
+            updateTotalContentHeight();
+        });
+        
+        $('.navbar li:not(.cfatool)').click(function() {
+            $("li.active").removeClass("active");
+            toolMode = 'none';
+            $('html,body').css('cursor','auto');
+        });
+        
+        $('.navbar .cfatool').click(function(e) {
+            if (!$(this).hasClass('active')) {
+                $(".navbar .cfatool").removeClass("active");
+                $(this).addClass('active');
+                if ($(this).hasClass('tool-split')) {
+                    toolMode = 'split';
+                    $('html,body').css('cursor','col-resize');
+                } else if ($(this).hasClass('tool-merge')) {
+                    toolMode = 'merge';
+                    $('html,body').css('cursor','pointer');
+                } else if ($(this).hasClass('tool-comment')) {
+                    toolMode = 'comment';
+                    $('html,body').css('cursor','text');
+                } else {
+                    toolMode = 'none';
+                    $('html,body').css('cursor','auto');
+                }
+                
+                if (toolMode !== 'none') {
+                    $('#settings-popover').popover('hide');
+                    $('#info-popover').popover('hide');
+                }
+            } else {
+                $(this).removeClass('active');
+                toolMode = 'none';
+                $('html,body').css('cursor','auto');
+            }
+            console.log('toolmode: ' + toolMode);
+        });
+        
+        /*$('body').on({
+            focus      : function(e) {
+                $(this).parent('.thread-reply').addClass('reply-input-typing');
+            },
+            focusout   : function(e) {
+                $(this).parent('.thread-reply').removeClass('reply-input-typing');
+            },
+            keyup      : function(e) {
+                if (e.keyCode === 13) {
+                    $(this).val('');
+                }
+            }
+        }, '.thread-reply input');*/
+        
+        $('body').on({
+            click      : function(e) {
+            }
+        }, 'comment-caret, comment-caret span');
+        
+        $('body').on({
+            mouseenter : function() {
+                if (toolMode === 'merge')
+                {
+                    $(this).addClass("toolAffect");
+                }
+            },
+            mouseleave : function() {
+                $(this).removeClass("toolAffect");
+            },
+            click      : function() {
+                if (toolMode === 'merge') {
+                    socket.emit('merge', {sectionStart: parseInt($(this).attr('data-start-offset'))});
+                }
+            }
+        }, '.cfasection');
+        
+        function mergeSection(sectionStart) {
+            var sectionIndex = -1;
+            for (var i = 0; i < sections.length; i++) 
+            {
+                if (sectionStart === sections[i].startOffset)
+                {
+                    sectionIndex = i;
+                    break;
+                }
+            }
+            
+            console.log("sectionIndex: " + sectionIndex);
+            
+            if (sectionIndex <= 0) return;
+            
+            var currLens = sections[sectionIndex-1].currentLens;
+            sections[sectionIndex-1].endOffset = sections[sectionIndex].endOffset;
+            sections[sectionIndex-1].lenses[currLens].preprocessData(sections[sectionIndex-1].startOffset, sections[sectionIndex-1].endOffset, $('.main').width());
+            
+            sections.splice(sectionIndex, 1);
+            
+            updateTotalContentHeight();
+        }
+        
+        function splitSection(splitOffset) {
+            var sectionIndex = -1;
+            for (var i = 0; i < sections.length; i++) 
+            {
+                if (splitOffset >= sections[i].startOffset && splitOffset < sections[i].endOffset)
+                {
+                    sectionIndex = i;
+                    break;
+                }
+            }
+            
+            if (sectionIndex === -1) return;
+            
+            if (sections[sectionIndex].startOffset >= splitOffset) return;
+            
+            var newSection = {};
+            newSection.sectionName = sections[i].sectionName;
+            newSection.startOffset = splitOffset;
+            newSection.endOffset = sections[i].endOffset;
+            newSection.lensSettings = sections[i].lensSettings;
+            newSection.lenses = [];
+            
+            var currLens = sections[i].currentLens;
+            sections[sectionIndex].endOffset = splitOffset;
+            sections[sectionIndex].lenses[currLens].preprocessData(sections[sectionIndex].startOffset, sections[sectionIndex].endOffset, $('.main').width());
+            
+            
+            var NewLens = stringToFunction(currLens);
+            var startLens = new NewLens;
+            for (var j = 0; j < sections[i].lensSettings.length; j++) {
+                    if (sections[i].lensSettings[j].key === currLens)
+                    {
+                        startLens.changeSettings(JSON.parse(newSection.lensSettings[j].val), false);
+                        break;
+                    }
+                }
+            startLens.preprocessData(newSection.startOffset, newSection.endOffset, $('.main').width());
+            newSection.lenses[currLens] = startLens;
+            newSection.currentLens = currLens;
+            sections.splice(sectionIndex+1, 0, newSection);
+            
+            updateTotalContentHeight();
+        }
+        
+        function changeLens(section, selLens) {
+            var newLensFunc = stringToFunction(selLens);
+            if (typeof section.lenses[selLens] === typeof undefined) {
+                var newLens = new newLensFunc();
+                section.lenses[selLens] = newLens;
+                console.log("added lens to section");
+                console.log(section.lenses);
+                console.log(sections);
+                for (var j = 0; j < section.lensSettings.length; j++) {
+                    if (section.lensSettings[j].key === selLens)
+                    {
+                        newLens.changeSettings(JSON.parse(section.lensSettings[j].val), false);
+                        break;
+                    }
+                }
+            }
+            section.lenses[selLens].preprocessData(section.startOffset, section.endOffset, $('.main').width());
+            section.currentLens = selLens;
+            for (var d in Drop.drops) {
+                Drop.drops[d].destroy();
+            }
+            
+            updateTotalContentHeight();
+            
+            drawViewArea(currentScrollPosition);
+        }
+        
+        $(document).on('mouseup keyup', '.hexview .hex', function () {
+        console.log(window.getSelection());
+        if (window.getSelection().toString().length>0) {
+            var count = window.getSelection();
+            var arr = [];
+            $('.hexview .hex span').each(function(){
+                var span  = $(this)[0];
+                var isT = count.containsNode(span, true);
+                if(isT){
+                    arr.push($(this).attr('data-offset'));
+                }
+            });
+            //console.log(arr,count.toString());
+            //alert(arr);
+            //alert(count.toString());
+        }
+    });
+        
+        /*$('.main').sortable({
+            axis: "y",
+            revert: true,
+            scroll: false,
+            //placeholder: "sortable-placeholder",
+            cursor: "n-resize",
+            handle: "span.section-move",
+            update: function(e, ui) {
+                //var oldIndex = ui.item.sortable.index;
+                var newIndex = ui.item.index();
+                console.log('sortableUpdate: ' + ui.item.attr('data-section-id') + ' ' + newIndex);
+            },
+            stop: function(e, ui) {
+                //var oldIndex = ui.item.sortable.index;
+                var newIndex = ui.item.index();
+                console.log('sortableStop: ' + ui.item.attr('data-section-id') + ' ' + newIndex);
+                if (servMove === false) {
+                    socket.emit('moveSection', { sectionId: ui.item.attr('data-section-id'),
+                                                newPosition: newIndex
+                                               });
+                }
+            }
+        }); */
+        
+        $('body').on('input', '.hexview .comments input', function() {
+            //alert($(this).attr('id'));
+            //alert($(this).text());
+            console.log('---- Comment Changed! ----\nComment ID: ' + $(this).attr('data-comment-id') + '\n Section ID: ' + $(this).closest('.hexview').attr('data-section-id'));
+            
+            socket.emit('updateComment', { sectionId: $(this).parents('.hexview').prev('.cfasection').attr('data-section-id'),
+                                          commentId: $(this).attr('data-comment-id'),
+                                          commentText: $(this).val()
+                                         });
+            
+            //alert($(this).closest('.hexview').attr('data-end-offset'));
+        });
+        
+        $('body').on('input', '.asmview .comments input', function() {
+            //alert($(this).attr('id'));
+            //alert($(this).text());
+            console.log('---- Comment Changed! ----\nComment ID: ' + $(this).attr('data-comment-id') + '\n Section ID: ' + $(this).closest('.asmview').attr('data-section-id'));
+            
+            socket.emit('updateComment', { sectionId: $(this).parents('.hexview').prev('.cfasection').attr('data-section-id'),
+                                          commentId: $(this).attr('data-comment-id'),
+                                          commentText: $(this).val()
+                                         });
+            
+            //alert($(this).closest('.hexview').attr('data-end-offset'));
+        });
+        
+        socket.on('userjoin', function(msg) {
+            console.log(msg);
+            socket.emit('testrep', { msg: 'wow' });
+        });
+        
+        socket.on('split', function(data) {
+            console.log(data);
+            splitSection(data.splitOffset);
+        });
+        
+        socket.on('merge', function(data) {
+            mergeSection(data.sectionStart);
+        });
+        
+        socket.on('lensChange', function(data) {
+            changeLens(findSection(data.startSection), data.newLens);
+        });
+        
+        socket.on('addComment', function(data) {
+            console.log('new comment added');
+            addComment(data.threadOffset, data.comment, data.author);
+        });
+        
+        socket.on('setThreadSummary', function(data) {
+            var threadSection = findSection(data.threadOffset);
+            var currLens = threadSection.currentLens;
+            if (threadExists(data.threadOffset)) {
+                threads[data.threadOffset].setSummary(data.summary);
+                threadSection.lenses[currLens].updateThreadSummary(data.threadOffset);
+            } else {
+                console.log('thread not found ERR');
+            }
+        });
+        
+        socket.on('threadList', function (tL) {
+            for (var i = 0; i < tL.length; i++) {
+                var newThread = new DiscussionThread();
+                newThread.setSummary(tL[i].summary);
+                newThread.discussion = tL[i].discussion;
+                threads[tL[i].index] = newThread;
+                
+                var threadSection = findSection(tL[i].index);
+                var currLens = threadSection.currentLens;
+                threadSection.lenses[currLens].updateComments();
+            }
+        });
+        
+        socket.on('sectionList', function (sL) {
+            sections = sL;
+            console.log(sL);
+            for (var i = 0; i < sections.length; i++) {
+                var NL = stringToFunction(sections[i].currentLens);
+                var defaultLens = new NL;
+                console.log('restoring initial settings 1');
+                for (var j = 0; j < sections[i].lensSettings.length; j++) {
+                    if (sections[i].lensSettings[j].key === sections[i].currentLens)
+                    {
+                        console.log('restoring initial settings 2');
+                        defaultLens.changeSettings(JSON.parse(sections[i].lensSettings[j].val), false);
+                        console.log('restoring initial settings 2');
+                        break;
+                    }
+                }
+                defaultLens.preprocessData(sections[i].startOffset, sections[i].endOffset, $('.main').width());
+                sections[i].lenses[sections[i].currentLens] = defaultLens;
+                
+            }
+            
+            updateTotalContentHeight();
+            
+            $('.main').slimScroll({ height: ($(window).height()-70)+'px', railVisible: true, alwaysVisible: true, disableFadeOut: true, scrollTo: currentScrollPosition, contentHeight: totalContentHeight });
+        });
+        
+        socket.on('changeLensSettings', function (args) {
+            console.log('change settings');
+            var sec = findSection(args.section);
+            sec.lenses[args.lens].changeSettings(args.settings, true);
+            updateTotalContentHeight();
+            drawViewArea(currentScrollPosition);
+        });
+        
+        socket.on('moveSection', function(data) {
+            console.log('got moveSection: ' + data.sectionId + ' ' + data.newPosition);
+            var moveItem = $('div[data-section-id="' + data.sectionId + '"]');
+            servMove = true;
+            $('.main').sortable('option','update')(null, {
+                item: $(moveItem).insertBefore($(".main > div:eq(" + data.newPosition + ")"))
+            });
+            servMove = false;
+        });
+        
+        socket.on('modifySection', function(data) {
+            console.log('modifySection');
+            console.log(data);
+
+            var content;
+            var $sectionDiv = $('div').find('[data-section-id="' + data.sectionId + '"]');
+            for (var d in Drop.drops) {
+                Drop.drops[d].destroy();
+            }
+            drawViewArea(currentScrollPosition);
+        });
+        
+        
+        
+        socket.on('addSection', function(data) {
+            if (data.type === 'hexview') {
+                data.lenses = [];
+                var newSection = {};
+                newSection.sectionName = data.sectionName;
+                newSection.startOffset = parseInt(data.startOffset);
+                newSection.endOffset = parseInt(data.endOffset);
+                newSection.lenses = [];
+                
+                var HL = stringToFunction('HexLens');
+                var defaultLens = new HL;
+                defaultLens.preprocessData(parseInt(data.startOffset), parseInt(data.endOffset), $('.main').width());
+                newSection.lenses[defaultLens.name] = defaultLens;
+                newSection.currentLens = defaultLens.name;
+                sections.push(newSection);
+                
+                updateTotalContentHeight();
+                $('.main').slimScroll({ height: ($(window).height()-70)+'px', railVisible: true, alwaysVisible: true, disableFadeOut: true, scrollTo: currentScrollPosition, contentHeight: totalContentHeight });
+            } else if (data.type === 'asmview') {
+                addAsmView(parseInt(data.startOffset), parseInt(data.endOffset), parseInt(data.sectionId), data.sectionName);
+            }
+        });
+        
+        socket.on('updateComment', function(data) {
+            console.log('Updated comment');
+            $('div').find('[data-section-id="' + data.sectionId + '"]').find('input[data-comment-id="' + data.commentId + '"]').val(data.commentText);
+        });
+        
+        socket.on('fileContents', function(data) {
+            console.log(data);
+            arrayBuffer = data.buffer;
+            dataView = new DataView(arrayBuffer);
+            byteView = new Uint8Array(arrayBuffer);
+            
+            $('.cfatool').removeClass('disabled');
+            
+            document.getElementById('fileName').innerHTML = data.fileName;
+            document.getElementById('fileSize').innerHTML = data.fileSize;
+        });
+        
+        function submitFormAddSection() {
+            alert("test");
+            event.preventDefault();
+            $('#addsection-popover').popover('hide');
+        }
+        
+        function updateTotalContentHeight() {
+            var totalHeight = 0;
+            var currLens;
+            for (var i = 0; i < sections.length; i++) {
+                currLens = sections[i].currentLens;
+                totalHeight += 30; // section header height
+                totalHeight += sections[i].lenses[currLens].getContentHeight();
+                console.log('totalHeight:' + totalHeight);
+            }
+            console.log('totalHeight:' + totalHeight);
+            totalContentHeight = totalHeight + 30; // extra padding to make last line visible
+
+            currLens = sections[startSection].currentLens;
+            var newScrollPos = (currentScrollPosition <= totalContentHeight ? currentScrollPosition : totalContentHeight - $(window).height()+50);
+            $('.main').slimScroll({ height: ($(window).height()-70)+'px', railVisible: true, alwaysVisible: true, disableFadeOut: true, scrollTo: newScrollPos, contentHeight: totalContentHeight });
+        }
+        
+        function getHeightBeforeSection(section) {
+            var priorHeight = 0;
+            var currLens;
+            for (var i = 0; i < section; i++) {
+                currLens = sections[i].currentLens;
+                priorHeight += 20; // section header height
+                priorHeight += sections[i].lenses[currLens].getContentHeight();
+            }
+            return priorHeight;
+        }
+        
+        function createSectionClick() {
+            var addSectionForm = document.getElementById('formAddSection');
+        }
+        
+        function openSelectedFile() {
+            var files = document.getElementById('files').files;
+            if (!files.length) {
+                alert('Please select a file!');
+                return;
+            }
+            
+            if (files[0]) {            
+                var formData = new FormData();
+                formData.append('file', files[0], files[0].name);
+                
+                if (files[0].size > 1048576) {
+                    alert('Please limit the file size to 1MB');
+                    return;
+                }
+                    
+                    
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'upload', true);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        alert('Uploaded');
+                        socket.emit('requestSectionList');
+                    } else {
+                        alert('Upload Failed');
+                    }
+                };
+                xhr.upload.onprogress = function(e) {
+                    var percentComplete = (e.loaded / e.total) * 100;
+                    console.log('file upload percent: ' + percentComplete);
+                };
+                xhr.onerror = function() {
+                    alert("Error! Upload failed. Can not connect to server.");
+                };
+                xhr.send(formData);
+                
+                $('.file-open-modal').modal('hide');
+            }
+        }
+        
+        function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+            // files is a FileList of File objects. List some properties.
+            var output = [];
+            /*for (var i = 0, f; f = files[i]; i++) {
+                output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                            f.size, ' bytes, last modified: ',
+                            f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                            '</li>');
+            }*/
+            
+            
+            
+            if (files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    var arrayBuffer = reader.result;
+                    //alert(arrayBuffer.byteLength);
+                    var faFull = new Uint8Array(arrayBuffer);
+                    var fa = new Float32Array(arrayBuffer, 0, 24);
+                    //alert(faFull.length);
+                    //alert(fa.length);
+                }
+
+                reader.readAsArrayBuffer(files[0]);
+                
+                document.getElementById('fileName').innerHTML = escape(files[0].name);
+                document.getElementById('fileSize').innerHTML = files[0].size + ' bytes';
+            }
+        }
+        
+        //document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    </script>
+  </body>
+</html>

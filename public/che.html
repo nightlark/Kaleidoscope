@@ -1,0 +1,89 @@
+<html>
+<head>
+</head>
+<body>
+<!--
+<div id="drop_zone">Drop files here</div>
+-->
+<input type="file" id="files" name="files[]" multiple />
+<output id="list"></output>
+
+<script>
+  function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+
+    // files is a FileList of File objects. List some properties.
+    var output = [];
+    for (var i = 0, f; f = files[i]; i++) {
+      output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                  f.size, ' bytes, last modified: ',
+                  f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                  '</li>');
+    }
+    if (files[0]) {
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        var arrayBuffer = reader.result;
+        alert(arrayBuffer.byteLength);
+        var faFull = new Uint8Array(arrayBuffer);
+        var fa = new Float32Array(arrayBuffer, 0, 24);
+        alert(faFull.length);
+        alert(fa.length);
+      }
+
+      reader.readAsArrayBuffer(files[0]);
+
+      /*reader.onload = (function(theFile) {
+        return function(e) {
+          // Render thumbnail.
+          //var span = document.createElement('span');
+          //span.innerHTML = ['<img class="thumb" src="', e.target.result,
+          //                  '" title="', escape(theFile.name), '"/>'].join('');
+          //document.getElementById('list').insertBefore(span, null);
+          alert(theFile.name);
+          //var faFull = new Uint8Array(buf);
+          //var fa = new Float32Array(buf);
+          //alert(faFull.length);
+          //alert(fa.length);
+        };
+      })(files[0]);*/
+
+      //var buf = reader.readAsArrayBuffer(files[0]);
+      //alert(buf.length);
+    }
+    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+  }
+
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+function handleFileSelectDrag(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    var files = evt.dataTransfer.files; // FileList object.
+
+    // files is a FileList of File objects. List some properties.
+    var output = [];
+    for (var i = 0, f; f = files[i]; i++) {
+      output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                  f.size, ' bytes, last modified: ',
+                  f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                  '</li>');
+    }
+    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+  }
+
+  function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+  }
+
+  // Setup the dnd listeners.
+  //var dropZone = document.getElementById('drop_zone');
+  //dropZone.addEventListener('dragover', handleDragOver, false);
+  //dropZone.addEventListener('drop', handleFileSelectDrag, false);
+</script>
+</body>
+</html>
